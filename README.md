@@ -8,7 +8,6 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 - **Relatório de Computer Vision:** [`docs/relatorio_computer_vision.pdf`](docs/relatorio_computer_vision.pdf)
 - **Relatório de DevOps (Deploy Blindado):** [`docs/devops/relatorio_devops.pdf`](docs/devops/relatorio_devops.pdf)
 - **Vídeo de demonstração:** (link do YouTube)
-- **Roteiro do vídeo:** [`docs/ROTEIRO_VIDEO.md`](docs/ROTEIRO_VIDEO.md)
 
 ## Integrantes
 
@@ -159,7 +158,7 @@ tests/      testes do contrato da API, segurança e LGPD
 infra/      Terraform da nuvem (Azure)
 monitoring/ Prometheus, alertas e painel do Grafana
 weights/    modelo baixado da Release (fora do git)
-docs/       relatório, métricas, figuras e roteiro do vídeo
+docs/       relatórios, métricas e figuras
 ```
 
 ## Segurança, LGPD e IA responsável
