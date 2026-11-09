@@ -19,7 +19,7 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 | Leticia Baptista | RM550289 |
 | Vinicius Sobreira Borges | RM97767 |
 
-## Ficha Técnica do MVP (componente Visão)
+## Ficha Técnica do MVP
 
 | Campo | Conteúdo |
 |---|---|
@@ -31,6 +31,11 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 | **Fontes de dados** | [PlantDoc](https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset) (CC BY 4.0), 20 classes de 8 culturas |
 | **Modelo de IA** | YOLO11n pré-treinado no COCO, com treinamento customizado (detecção de objetos) |
 | **Indicadores** | mAP@50 no teste, % de folhas doentes sinalizadas, % de doentes ditas saudáveis, tempo por imagem (`docs/results/metrics.json`) |
+| **Nuvem** | Azure, região Brazil South: Container Apps, Container Registry, Log Analytics, Storage (state do Terraform) e identidades gerenciadas |
+| **URL pública** | <https://ca-agrofacil-prod.whitewave-37b28008.brazilsouth.azurecontainerapps.io> |
+| **Segurança** | Gitleaks, Semgrep e Trivy a cada push; login no Azure por OIDC, sem senha; só HTTPS; container sem root; nenhuma porta de administração aberta |
+| **Observabilidade** | Prometheus e Grafana (4 sinais de ouro) e 4 regras de alerta |
+| **Custo estimado** | Cerca de US$ 15 por mês no uso esperado e US$ 38 no pior caso (detalhes no relatório de DevOps) |
 | **ODS** | 2 (Fome zero e agricultura sustentável), 9 (Inovação), 10 (Redução das desigualdades), 13 (Ação climática) |
 
 ## Culturas e classes

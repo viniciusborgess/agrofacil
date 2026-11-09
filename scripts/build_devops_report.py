@@ -174,6 +174,7 @@ def main():
         Paragraph("AgroFácil · Deploy Blindado", TITLE),
         Paragraph("Secure DevOps Tools &amp; Cloud Computing · Global Solution 2026.2 · CitizenTech", H2),
         Paragraph("Engenharia de Software · 4º ano (4ES) · FIAP", BODY),
+        Paragraph("Professor: Gabriel Henrique Boyczuk Arcanjo", BODY),
         Spacer(1, 1 * cm),
         Paragraph("Integrantes", H2),
         table([["Nome completo", "RM"]] + [[t["nome"], t["rm"]] for t in team], [10 * cm, 4 * cm]),
