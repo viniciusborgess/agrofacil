@@ -8,10 +8,10 @@
   },
   "corrigida": {
     "conclusion": "success",
-    "createdAt": "2026-11-09T18:58:54Z",
-    "databaseId": 42678928647,
-    "displayTitle": "Infra: teto de logs dentro da cota gratuita e plano sem diferen\u00e7as fa\u2026",
-    "headSha": "70198a8640e6879d938efd41bf8ebeb7b9109c3a"
+    "createdAt": "2026-11-09T20:24:42Z",
+    "databaseId": 42692692285,
+    "displayTitle": "Semgrep: remove shell=True do relat\u00f3rio e justifica a exce\u00e7\u00e3o no cole\u2026",
+    "headSha": "6b26f8debbcf72bdbc2222aae0dc8b09724fd35e"
   },
   "job_barrado": "https://github.com/viniciusborgess/agrofacil/actions/runs/42676002417/job/129357730092"
 }

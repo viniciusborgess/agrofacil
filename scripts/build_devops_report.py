@@ -281,6 +281,16 @@ def main():
             "Debian no build e removeu setuptools e wheel da imagem. Na execução seguinte, todos os estágios passaram e "
             "o deploy publicou a nova versão sozinho.", BODY),
         figure(EV / "13_execucao_corrigida.png", 15, "Figura 10. Execução corrigida: todos os estágios aprovados e deploy automático."),
+        Paragraph("4.2 Segundo bloqueio: Semgrep", H2),
+        Paragraph(
+            f"O pipeline barrou um segundo problema real. Os scripts que coletam as evidências deste relatório chamavam "
+            "comandos com subprocess e shell=True, padrão que o Semgrep classifica como bloqueante por permitir injeção "
+            f"de comandos. A execução {link(f'{REPO_URL}/actions/runs/42692489668', '42692489668')} parou no SAST, e o build "
+            "e o deploy foram pulados. Na correção, o gerador do relatório passou a chamar o Terraform sem shell. O coletor "
+            "de evidências, que roda só na máquina do time e com comandos fixos no código, recebeu uma exceção explícita "
+            f"e justificada no próprio código. A execução {link(f'{REPO_URL}/actions/runs/42692692285', '42692692285')} "
+            "passou em todos os estágios e publicou o modelo final.", BODY),
+        figure(EV / "12c_semgrep_barrou.png", 14, "Figura 10b. Execução barrada pelo Semgrep: os achados bloqueantes impediram build e deploy."),
         figure(EV / "10_actions_historico.png", 15, "Figura 11. Histórico do pipeline."),
         figure(EV / "14_mvp_publicado.png", 15, f"Figura 12. MVP em uso na URL pública ({app_url})."),
 

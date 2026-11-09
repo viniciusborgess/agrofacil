@@ -1,0 +1,4 @@
+24 conexões simultâneas por 240 s contra o MVP no Azure: 14.025 requisições (58 por segundo)
+4.529 atendidas com sucesso e 9.492 recusadas com 503 pelo limite de 4 análises simultâneas por réplica, sem travar o serviço
+latência p50 de 358 ms e p95 de 880 ms
+os alertas AgroFacilSaturada e AgroFacilTaxaDeErrosAlta dispararam e voltaram ao normal após o teste
