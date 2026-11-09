@@ -13,10 +13,11 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 
 | Nome | RM |
 |---|---|
+| Vinicius Sobreira Borges | RM97767 |
 | Julia Ortiz | RM550204 |
 | Julia Palomari | RM551910 |
 | Leticia Baptista | RM550289 |
-| Vinicius Sobreira Borges | RM97767 |
+
 
 ## Ficha Técnica do MVP
 
