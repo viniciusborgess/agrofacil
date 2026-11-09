@@ -1,6 +1,6 @@
 # Copie para terraform.tfvars (ignorado pelo git) e preencha.
 subscription_id = "00000000-0000-0000-0000-000000000000"
-github_repo     = "dono/agrofacil"
+github_repo     = "dono@id_do_dono/agrofacil@id_do_repo" # veja o "subject" no erro AADSTS700213 ou na API do GitHub
 location        = "brazilsouth"
 image_tag       = ""
 metrics_token   = "gere com: openssl rand -hex 32"

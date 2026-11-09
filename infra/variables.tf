@@ -20,7 +20,7 @@ variable "environment" {
 }
 
 variable "github_repo" {
-  description = "Repositório autorizado a publicar, no formato dono/nome"
+  description = "Repositório autorizado a publicar, como aparece no token OIDC do GitHub: dono@id/nome@id"
   type        = string
 }
 
