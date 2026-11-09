@@ -4,7 +4,9 @@ Este repositório traz o componente de visão computacional do **AgroFácil**, a
 
 O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular ou por foto. Para cada folha, mostra onde está o possível problema e sugere o primeiro cuidado em linguagem simples.
 
-- **Relatório:** [`docs/relatorio_computer_vision.pdf`](docs/relatorio_computer_vision.pdf)
+- **MVP no ar:** <https://ca-agrofacil-prod.whitewave-37b28008.brazilsouth.azurecontainerapps.io>
+- **Relatório de Computer Vision:** [`docs/relatorio_computer_vision.pdf`](docs/relatorio_computer_vision.pdf)
+- **Relatório de DevOps (Deploy Blindado):** [`docs/devops/relatorio_devops.pdf`](docs/devops/relatorio_devops.pdf)
 - **Vídeo de demonstração:** (link do YouTube)
 - **Roteiro do vídeo:** [`docs/ROTEIRO_VIDEO.md`](docs/ROTEIRO_VIDEO.md)
 
@@ -50,12 +52,14 @@ Pragas não estão cobertas: o dataset tem só 2 imagens da única praga anotada
 ```bash
 uv venv .venv --python 3.11
 uv pip install --python .venv/bin/python -r requirements.txt
+scripts/fetch_model.sh       # baixa o modelo da Release e confere o SHA-256
 scripts/run_demo.sh          # abra http://localhost:8000
 ```
 
 Com Docker:
 
 ```bash
+scripts/fetch_model.sh
 docker build -t agrofacil-visao .
 docker run -p 8000:8000 agrofacil-visao
 ```
@@ -90,6 +94,42 @@ docker run -p 8000:8000 agrofacil-visao
 - **Caixas:** normalizadas entre 0 e 1.
 - **Outras rotas:** `GET /health` e `GET /v1/classes`.
 
+## Deploy blindado (DevOps e nuvem)
+
+| Exigência | Onde está |
+|---|---|
+| Container enxuto, não root, sem segredo | [`Dockerfile`](Dockerfile), [`.dockerignore`](.dockerignore) |
+| Stack com docker compose | [`docker-compose.yml`](docker-compose.yml): API, Prometheus e Grafana |
+| Nuvem por Terraform, state e `.tfvars` fora do repositório | [`infra/`](infra/), state no Azure Storage ([`scripts/bootstrap_state.sh`](scripts/bootstrap_state.sh)) |
+| Sem porta de administração aberta | Azure Container Apps: só HTTPS na 443, sem SSH nem RDP |
+| Pipeline com build, Gitleaks, Semgrep e Trivy a cada push | [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml) |
+| Segredos no GitHub Secrets e deploy automático | Login no Azure por OIDC, sem senha; deploy em `main` com teste de fumaça |
+| Observabilidade com 4 sinais de ouro e alerta | [`monitoring/`](monitoring/): painel do Grafana e regras do Prometheus |
+
+O modelo de IA é publicado como Release do GitHub e conferido por SHA-256 ([`model.lock.json`](model.lock.json), [`scripts/fetch_model.sh`](scripts/fetch_model.sh)).
+
+### Subir a infraestrutura
+
+```bash
+az login
+scripts/bootstrap_state.sh brazilsouth                 # Storage do state remoto
+cp infra/terraform.tfvars.example infra/terraform.tfvars   # preencha (fica fora do git)
+terraform -chdir=infra init -backend-config=backend.hcl
+terraform -chdir=infra plan -out=tfplan && terraform -chdir=infra apply tfplan
+```
+
+1. Cadastre no GitHub os secrets `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` e `AZURE_SUBSCRIPTION_ID`, e as variáveis `ACR_NAME`, `RESOURCE_GROUP` e `CONTAINER_APP`. Os valores saem do `terraform output`.
+2. Faça um push em `main`. O pipeline envia a imagem ao registro.
+3. No primeiro deploy, rode o `apply` com `image_tag` igual ao SHA do commit para criar o app. Daí em diante, o pipeline publica sozinho.
+
+### Monitoramento
+
+```bash
+scripts/monitoring_setup.sh      # token de métricas e alvo do Azure (fora do git)
+docker compose up -d             # Grafana em http://localhost:3000, Prometheus em http://localhost:9090
+.venv/bin/python scripts/load_test.py --url <URL do app> --concurrency 24 --seconds 240   # dispara o alerta de saturação
+```
+
 ## Reproduzir o treino e a avaliação
 
 ```bash
@@ -111,7 +151,9 @@ api/        API FastAPI, inferência ONNX e textos para o produtor
 web/        demo no navegador (câmera e envio de foto)
 scripts/    dados, treino, avaliação, vídeo e relatório
 tests/      testes do contrato da API, segurança e LGPD
-weights/    modelo final (ONNX e PyTorch) e metadados
+infra/      Terraform da nuvem (Azure)
+monitoring/ Prometheus, alertas e painel do Grafana
+weights/    modelo baixado da Release (fora do git)
 docs/       relatório, métricas, figuras e roteiro do vídeo
 ```
 

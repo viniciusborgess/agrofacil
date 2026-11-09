@@ -1,0 +1,19 @@
+{
+  "consultado_em": "2026-11-09",
+  "regiao": "brazilsouth",
+  "medidores": {
+    "Standard Requests": 0.4,
+    "Standard Memory Idle Usage": 3e-06,
+    "Standard vCPU Active Usage": 2.4e-05,
+    "Standard Memory Active Usage": 3e-06,
+    "Standard vCPU Idle Usage": 3e-06,
+    "Standard NC A100 v4 GPU Usage": 0.001058,
+    "Standard NC T4 v3 GPU Usage": 0.000146,
+    "Task vCPU Duration": 0.0001,
+    "Basic Registry Unit": 0.1666,
+    "Data Stored": 0.1,
+    "Analytics Logs Data Ingestion": 0.0,
+    "Analytics Logs Data Analyzed": 2.3,
+    "Analytics Logs Data Retention": 0.2
+  }
+}

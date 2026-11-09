@@ -1,0 +1,17 @@
+{
+  "barrada": {
+    "conclusion": "failure",
+    "createdAt": "2026-11-09T18:39:55Z",
+    "databaseId": 42676002417,
+    "displayTitle": "Fixa o modelo v0 por checksum",
+    "headSha": "bb94d1a156d3e06d8d1ea1e44648450dd11c109a"
+  },
+  "corrigida": {
+    "conclusion": "success",
+    "createdAt": "2026-11-09T18:58:54Z",
+    "databaseId": 42678928647,
+    "displayTitle": "Infra: teto de logs dentro da cota gratuita e plano sem diferen\u00e7as fa\u2026",
+    "headSha": "70198a8640e6879d938efd41bf8ebeb7b9109c3a"
+  },
+  "job_barrado": "https://github.com/viniciusborgess/agrofacil/actions/runs/42676002417/job/129357730092"
+}
