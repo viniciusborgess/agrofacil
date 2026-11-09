@@ -36,7 +36,7 @@ resource "azurerm_log_analytics_workspace" "main" {
   resource_group_name = azurerm_resource_group.main.name
   sku                 = "PerGB2018"
   retention_in_days   = 30
-  daily_quota_gb      = 0.5 # teto de custo: a ingestão para ao atingir o limite diário
+  daily_quota_gb      = 0.15 # ~4,5 GB/mês: abaixo dos 5 GB gratuitos, então o custo de logs fica em zero
   tags                = local.tags
 }
 
@@ -107,6 +107,7 @@ resource "azurerm_container_app" "api" {
   container_app_environment_id = azurerm_container_app_environment.main.id
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
+  workload_profile_name        = "Consumption"
   tags                         = local.tags
 
   identity {
@@ -128,7 +129,7 @@ resource "azurerm_container_app" "api" {
   ingress {
     external_enabled           = true
     target_port                = 8000
-    transport                  = "auto"
+    transport                  = "http"
     allow_insecure_connections = false
     traffic_weight {
       latest_revision = true
@@ -174,8 +175,16 @@ resource "azurerm_container_app" "api" {
   }
 
   # O pipeline publica novas imagens; o Terraform não deve revertê-las.
+  # Os demais campos não voltam na leitura da API e gerariam diferença em todo plan (problema do provider azurerm).
   lifecycle {
-    ignore_changes = [template[0].container[0].image]
+    ignore_changes = [
+      template[0].container[0].image,
+      template[0].container[0].liveness_probe,
+      template[0].container[0].readiness_probe,
+      template[0].cooldown_period_in_seconds,
+      template[0].polling_interval_in_seconds,
+      ingress[0].traffic_weight,
+    ]
   }
 
   depends_on = [azurerm_role_assignment.app_pull]
