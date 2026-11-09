@@ -213,6 +213,7 @@ def main():
     names = [t["nome"] for t in team]
     worst_label, worst_value = min(((k, v) for k, v in robust.items() if k != "Original"), key=lambda kv: kv[1])
     responses = demo["respostas"]
+    samples_manifest = json.loads((ROOT / "assets/samples/manifest.json").read_text())
 
     plan = []
 
@@ -266,10 +267,12 @@ def main():
                 "Sem internet boa para o vídeo, o produtor pode enviar uma foto. O resultado mostra a doença provável, a confiança, o primeiro cuidado e o aviso para confirmar com a assistência técnica.")]
     if "foto_ruim" in responses:
         uploads.append(("foto_ruim", [f"Foto ruim: {'nada detectado' if responses['foto_ruim']['status'] == 'nada_detectado' else 'inconclusivo'}"],
-                        "Com uma foto escura e fora de foco, o sistema não arrisca: ele avisa que não teve certeza e pede uma nova foto."))
+                        "Com uma foto escura e fora de foco, o sistema não arrisca: "
+                        + ("ele avisa que não teve certeza e pede uma nova foto." if responses["foto_ruim"]["status"] == "inconclusivo"
+                           else "ele responde que não encontrou uma folha conhecida, em vez de chutar um diagnóstico.")))
     if "erro" in responses:
         uploads.append(("erro", ["Erro real do modelo"],
-                        "O modelo também erra. Aqui, a doença sinalizada é diferente da anotada no conjunto de teste. Por isso o resultado é tratado como sugestão, e a decisão final fica com uma pessoa."))
+                        f"O modelo também erra. Aqui, {samples_manifest['uploads']['erro']['descricao']}. Por isso o resultado é tratado como sugestão, e a decisão final fica com uma pessoa."))
     for name, label, narration in uploads:
         plan.append(("upload", (name, label), narration))
 

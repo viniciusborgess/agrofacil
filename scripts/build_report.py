@@ -150,6 +150,7 @@ def main():
     tr, va, te, cnt = data["train"], data["val"], data["test"], data["contagens"]
     cpu2 = lat["ONNX CPU, 2 thread(s)"]
     epochs_run = sum(1 for _ in args.results_csv.open()) - 1
+    samples = json.loads((ROOT / "assets/samples/manifest.json").read_text())["uploads"]
 
     chart_training(args.results_csv, FIG / "treino.png")
     per_class = sorted(tr["por_classe"].items(), key=lambda kv: -kv[1]["caixas"])
@@ -235,7 +236,8 @@ def main():
              "É o menor modelo da família (2,6 milhões de parâmetros), adequado a CPU e celulares de entrada."],
             ["Transfer learning (COCO)", "Pesos pré-treinados em 80 classes gerais, ajustados para as 20 classes do projeto.",
              "Com cerca de 1.400 imagens de treino, partir do zero não convergiria bem."],
-            ["PyTorch + MPS", "Treino na GPU integrada do Apple M1.", "Disponível na máquina da equipe, sem custo de nuvem."],
+            ["PyTorch + CUDA (Google Colab)", "Treino em uma GPU NVIDIA T4 gratuita do Google Colab.",
+             "No notebook da equipe (Apple M1, 8 GB) cada época levava cerca de 17 minutos; na T4, as 40 épocas levaram cerca de 13."],
             ["ONNX + ONNX Runtime", "Modelo exportado e executado em CPU, com pré e pós-processamento (letterbox e NMS) "
              "próprios em NumPy.", "Imagem de produção sem PyTorch, menor e mais barata de hospedar."],
             ["FastAPI", "API com POST /v1/detections, que devolve JSON com caixas, rótulos e orientação.",
@@ -261,8 +263,8 @@ def main():
             f"<b>Divisão.</b> Do treino oficial, separamos 15% para validação, estratificado pela classe principal "
             f"(semente 42). Resultado: {tr['imagens']} imagens de treino, {va['imagens']} de validação e {te['imagens']} de "
             "teste, este intocado até a avaliação final.",
-            f"<b>Treino.</b> YOLO11n pré-treinado no COCO, imagens de 480 px, lote 8, até 40 épocas com taxa de aprendizado "
-            f"cosseno e parada antecipada (paciência 12), na GPU do Apple M1. Foram {epochs_run} épocas. Além do mosaico "
+            f"<b>Treino.</b> YOLO11n pré-treinado no COCO, imagens de 480 px, lote 16, até 40 épocas com taxa de aprendizado "
+            f"cosseno e parada antecipada (paciência 12), em uma GPU NVIDIA T4 do Google Colab. Foram {epochs_run} épocas. Além do mosaico "
             "padrão, usamos rotação de 15° e inversão vertical, porque folhas não têm orientação fixa.",
             f"<b>Calibração.</b> Escolhemos na validação o limiar de confiança que maximiza o F1 médio: {num(m['conf_decisao'], 2)}. "
             "Abaixo dele o sistema não afirma nada e pede outra foto.",
@@ -329,10 +331,10 @@ def main():
         Paragraph("5.6 Exemplos", H2),
         figure(args.build / "upload_doenca.png", 15, "Figura 5. Foto enviada: a caixa indica a folha, e o painel mostra a "
                "doença provável, o primeiro cuidado e o aviso de confirmação."),
-        figure(args.build / "upload_foto_ruim.png", 15, "Figura 6. Foto escura e fora de foco: o sistema não arrisca e pede "
-               "outra foto."),
-        figure(args.build / "upload_erro.png", 15, "Figura 7. Erro real do modelo no teste: a doença sinalizada difere da "
-               "anotação. Por isso a decisão final fica com uma pessoa."),
+        figure(args.build / "upload_foto_ruim.png", 15, "Figura 6. Foto escura e fora de foco: o sistema não arrisca e "
+               + ("pede outra foto." if json.loads((args.build / "demo.json").read_text())["respostas"]["foto_ruim"]["status"] == "inconclusivo" else "responde que não encontrou uma folha conhecida.")),
+        figure(args.build / "upload_erro.png", 15, f"Figura 7. Erro real do modelo no teste: {samples['erro']['descricao']}. "
+               "Por isso a decisão final fica com uma pessoa."),
 
         Paragraph("6. IA responsável, segurança e LGPD", H1),
         ListFlowable([ListItem(Paragraph(s, BODY), leftIndent=12) for s in [

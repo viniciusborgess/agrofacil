@@ -25,3 +25,4 @@ infra/backend.hcl
 monitoring/secrets/
 monitoring/prometheus/targets/
 assets/video_build/
+colab/

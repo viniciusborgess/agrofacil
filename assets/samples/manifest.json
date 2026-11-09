@@ -1,0 +1,113 @@
+{
+  "live": [
+    {
+      "arquivo": "live_1.jpg",
+      "origem": "Soybean_20edamame_20leaf1_a7293a40",
+      "rotulo_real": [
+        "Soyabean leaf"
+      ],
+      "status": "folha_saudavel",
+      "predito": [
+        "Soyabean leaf",
+        "Soyabean leaf",
+        "Soyabean leaf"
+      ]
+    },
+    {
+      "arquivo": "live_2.jpg",
+      "origem": "730-grape-leaf-2560x1600-nature-wallpaper_1b45f367",
+      "rotulo_real": [
+        "grape leaf"
+      ],
+      "status": "folha_saudavel",
+      "predito": [
+        "grape leaf"
+      ]
+    },
+    {
+      "arquivo": "live_3.jpg",
+      "origem": "late_blight_tomato_leaf_spore1x1200_f07ae859",
+      "rotulo_real": [
+        "Tomato leaf late blight"
+      ],
+      "status": "possivel_doenca",
+      "predito": [
+        "Tomato leaf late blight",
+        "Tomato leaf late blight",
+        "Tomato leaf late blight"
+      ]
+    },
+    {
+      "arquivo": "live_4.jpg",
+      "origem": "powdery-mildew-on-pumpkin-leaves-close-up-2_03d6784e",
+      "rotulo_real": [
+        "Squash Powdery mildew leaf"
+      ],
+      "status": "possivel_doenca",
+      "predito": [
+        "Squash Powdery mildew leaf"
+      ]
+    },
+    {
+      "arquivo": "live_5.jpg",
+      "origem": "160314_web_29e1b4f8",
+      "rotulo_real": [
+        "Corn leaf blight"
+      ],
+      "status": "possivel_doenca",
+      "predito": [
+        "Corn leaf blight"
+      ]
+    }
+  ],
+  "uploads": {
+    "doenca": {
+      "arquivo": "upload_doenca.jpg",
+      "origem": "late_blight_tomato_leaf_spore1x1200_f07ae859",
+      "rotulo_real": [
+        "Tomato leaf late blight"
+      ],
+      "status": "possivel_doenca",
+      "predito": [
+        "Tomato leaf late blight",
+        "Tomato leaf late blight",
+        "Tomato leaf late blight"
+      ]
+    },
+    "saudavel": {
+      "arquivo": "upload_saudavel.jpg",
+      "origem": "Soybean_20edamame_20leaf1_a7293a40",
+      "rotulo_real": [
+        "Soyabean leaf"
+      ],
+      "status": "folha_saudavel",
+      "predito": [
+        "Soyabean leaf",
+        "Soyabean leaf",
+        "Soyabean leaf"
+      ]
+    },
+    "erro": {
+      "arquivo": "upload_erro.jpg",
+      "origem": "piano_20gully_20spray_20seed_20damage_2006_20_289_29_06f7649e",
+      "rotulo_real": [
+        "grape leaf black rot"
+      ],
+      "status": "folha_saudavel",
+      "predito": [
+        "grape leaf"
+      ],
+      "descricao": "a folha era de uva com podridão-negra, mas o modelo respondeu uva sadia"
+    },
+    "foto_ruim": {
+      "arquivo": "upload_foto_ruim.jpg",
+      "status": "inconclusivo",
+      "blur": 8,
+      "luz": 0.65
+    },
+    "sem_planta": {
+      "arquivo": "upload_sem_planta.jpg",
+      "status": "nada_detectado"
+    }
+  }
+}

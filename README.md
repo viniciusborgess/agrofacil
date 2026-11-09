@@ -136,7 +136,7 @@ docker compose up -d             # Grafana em http://localhost:3000, Prometheus 
 uv pip install --python .venv/bin/python -r requirements-train.txt
 scripts/download_data.sh                      # PlantDoc, no commit registrado em docs/data_report.json
 .venv/bin/python scripts/prepare_data.py      # valida, deduplica e separa os dados
-.venv/bin/python scripts/train.py             # Apple Silicon; em GPU: --device 0
+.venv/bin/python scripts/train.py --device 0 --batch 16   # GPU NVIDIA (usamos o Colab: scripts/package_colab.py)
 .venv/bin/python scripts/evaluate.py          # calibra, testa, exporta para ONNX
 .venv/bin/python -m pytest tests              # testes da API
 .venv/bin/python scripts/build_report.py      # gera o PDF
