@@ -188,7 +188,6 @@ def main():
             ["Execução corrigida", link(f"{REPO_URL}/actions/runs/{passed['databaseId']}", f"run {passed['databaseId']}")],
         ], [5 * cm, 11.4 * cm]),
         Spacer(1, 0.6 * cm),
-        Paragraph(f"São Paulo, {date.today().strftime('%d/%m/%Y')}", BODY),
         PageBreak(),
 
         Paragraph("1. Ficha Técnica do MVP", H1),
@@ -368,7 +367,6 @@ def main():
     def footer(canvas, doc):
         canvas.setFont("Arial", 8)
         canvas.setFillColor(colors.HexColor(INK_2))
-        canvas.drawString(2 * cm, 1.2 * cm, "AgroFácil · Deploy Blindado · FIAP GS 2026.2")
         canvas.drawRightString(A4[0] - 2 * cm, 1.2 * cm, str(doc.page))
 
     SimpleDocTemplate(str(OUT), pagesize=A4, leftMargin=2.2 * cm, rightMargin=2.2 * cm, topMargin=2 * cm, bottomMargin=2 * cm,

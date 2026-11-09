@@ -198,7 +198,6 @@ def main():
         Spacer(1, 1.2 * cm),
         Paragraph(f"Repositório: {args.repo_url}", BODY),
         Paragraph(f"Vídeo de demonstração: {args.video_url}", BODY),
-        Paragraph(f"São Paulo, {date.today().strftime('%d/%m/%Y')}", BODY),
         PageBreak(),
 
         Paragraph("Resumo", H1),
@@ -375,7 +374,6 @@ def main():
     def footer(canvas, doc):
         canvas.setFont("Arial", 8)
         canvas.setFillColor(colors.HexColor(INK_2))
-        canvas.drawString(2 * cm, 1.2 * cm, "AgroFácil Visão · Applied Computer Vision · FIAP GS 2026.2")
         canvas.drawRightString(A4[0] - 2 * cm, 1.2 * cm, str(doc.page))
 
     SimpleDocTemplate(str(args.out), pagesize=A4, leftMargin=2.2 * cm, rightMargin=2.2 * cm, topMargin=2 * cm,
