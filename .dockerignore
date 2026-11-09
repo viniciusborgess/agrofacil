@@ -1,0 +1,7 @@
+*
+!requirements.txt
+!api/
+!web/
+!weights/agrofacil.onnx
+!weights/agrofacil.json
+**/__pycache__

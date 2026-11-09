@@ -1,0 +1,138 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: agrofacil-visao
+  GITLEAKS_VERSION: 8.21.2
+  GITLEAKS_SHA256: 5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba
+  TRIVY_VERSION: 0.76.1
+  TRIVY_SHA256: c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0
+
+jobs:
+  segredos:
+    name: Gitleaks (segredos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Instalar Gitleaks com checksum verificado
+        run: |
+          curl -fsSLo gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar -xzf gitleaks.tgz gitleaks
+      - name: Procurar segredos em todo o histórico
+        run: ./gitleaks detect --source . --redact --verbose --exit-code 1
+
+  sast:
+    name: Semgrep (SAST)
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep:1.184.0
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Analisar o código
+        run: semgrep scan --config p/python --config p/owasp-top-ten --config p/dockerfile --error --metrics=off
+
+  testes:
+    name: Testes da API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+      - run: scripts/fetch_model.sh
+      - run: pip install -r requirements.txt pytest httpx
+      - run: python -m pytest -q tests
+
+  iac:
+    name: Trivy (Terraform e Dockerfile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Instalar Trivy com checksum verificado
+        run: |
+          curl -fsSLo trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum -c -
+          tar -xzf trivy.tgz trivy
+      - name: Analisar configuração
+        run: ./trivy config --severity HIGH,CRITICAL --exit-code 1 .
+
+  build:
+    name: Build e Trivy (imagem)
+    needs: [segredos, sast, testes, iac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Baixar o modelo com checksum verificado
+        run: scripts/fetch_model.sh
+      - name: Build
+        run: docker build -t "${IMAGE}:${GITHUB_SHA}" .
+      - name: Instalar Trivy com checksum verificado
+        run: |
+          curl -fsSLo trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum -c -
+          tar -xzf trivy.tgz trivy
+      - name: Vulnerabilidades da imagem
+        run: ./trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "${IMAGE}:${GITHUB_SHA}"
+      - name: Guardar imagem para o deploy
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: docker save "${IMAGE}:${GITHUB_SHA}" | gzip > image.tar.gz
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: image
+          path: image.tar.gz
+          retention-days: 1
+
+  deploy:
+    name: Deploy no Azure
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    concurrency: production
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: image
+      - name: Login no Azure por OIDC (sem senha)
+        uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Publicar a imagem no registro
+        run: |
+          REGISTRY=$(az acr show -n "${{ vars.ACR_NAME }}" --query loginServer -o tsv)
+          az acr login -n "${{ vars.ACR_NAME }}"
+          docker load < image.tar.gz
+          docker tag "${IMAGE}:${GITHUB_SHA}" "${REGISTRY}/${IMAGE}:${GITHUB_SHA}"
+          docker push "${REGISTRY}/${IMAGE}:${GITHUB_SHA}"
+          echo "REGISTRY=${REGISTRY}" >> "$GITHUB_ENV"
+      - name: Atualizar o aplicativo
+        run: |
+          if ! az containerapp show -n "${{ vars.CONTAINER_APP }}" -g "${{ vars.RESOURCE_GROUP }}" -o none 2>/dev/null; then
+            echo "::error::Aplicativo ainda não existe. Crie com: terraform apply -var image_tag=${GITHUB_SHA}"
+            exit 1
+          fi
+          az containerapp update -n "${{ vars.CONTAINER_APP }}" -g "${{ vars.RESOURCE_GROUP }}" \
+            --image "${REGISTRY}/${IMAGE}:${GITHUB_SHA}" -o none
+      - name: Teste de fumaça
+        run: |
+          URL="https://$(az containerapp show -n "${{ vars.CONTAINER_APP }}" -g "${{ vars.RESOURCE_GROUP }}" --query properties.configuration.ingress.fqdn -o tsv)"
+          for i in $(seq 1 30); do
+            if curl -fsS "${URL}/health"; then echo; echo "no ar: ${URL}"; exit 0; fi
+            sleep 10
+          done
+          echo "a aplicação não respondeu em ${URL}/health"; exit 1

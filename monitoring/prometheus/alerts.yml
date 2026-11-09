@@ -1,0 +1,42 @@
+groups:
+  - name: agrofacil-sinais-de-ouro
+    rules:
+      - alert: AgroFacilForaDoAr
+        expr: up{job=~"agrofacil-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API fora do ar ({{ $labels.ambiente }})"
+          description: "O Prometheus não consegue ler /metrics há mais de 1 minuto."
+
+      - alert: AgroFacilTaxaDeErrosAlta
+        expr: |
+          sum by (ambiente) (rate(http_requests_total{status=~"5.."}[2m]))
+            / sum by (ambiente) (rate(http_requests_total{route!="/metrics"}[2m])) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mais de 5% de erros 5xx ({{ $labels.ambiente }})"
+          description: "Taxa atual: {{ $value | humanizePercentage }}."
+
+      - alert: AgroFacilLatenciaAlta
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le, ambiente) (rate(http_request_duration_seconds_bucket{route="/v1/detections"}[2m]))) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 da detecção acima de 1 s ({{ $labels.ambiente }})"
+          description: "p95 atual: {{ $value | humanizeDuration }}."
+
+      - alert: AgroFacilSaturada
+        expr: sum by (ambiente) (rate(inference_rejected_busy_total[2m])) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API recusando pedidos por falta de capacidade ({{ $labels.ambiente }})"
+          description: "{{ $value | printf \"%.1f\" }} recusas (503) por segundo."

@@ -1,0 +1,27 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.env
+
+# Dados: baixe e prepare com os scripts do README.
+data/
+
+# Só os resultados selecionados vão para docs/results.
+runs/
+*.cache
+
+# Pesos: publicados como Release do GitHub (ver model.lock.json e scripts/fetch_model.sh).
+weights/
+
+# Infra e monitoramento: state, variáveis e segredos nunca vão para o git.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+infra/backend.hcl
+monitoring/secrets/
+monitoring/prometheus/targets/
+assets/video_build/

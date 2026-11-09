@@ -1,0 +1,15 @@
+# Treino e avaliação. O PyTorch fica em 2.7.1 porque versões recentes quebram o MPS no macOS 14.
+-r requirements.txt
+torch==2.7.1
+torchvision==0.22.1
+ultralytics==8.4.*
+onnx
+imagehash
+opencv-python-headless
+pandas
+matplotlib
+reportlab
+imageio-ffmpeg
+playwright
+pytest
+httpx

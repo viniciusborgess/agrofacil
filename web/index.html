@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroFácil Visão</title>
+<style>
+  :root { --bg:#f6f4ec; --card:#fff; --ink:#1d2a1f; --muted:#4d5a4f; --brand:#1f5c34; --line:#c9cfc3; --alert:#8f2d0f; --ok:#1f5c34; --warn:#6b5200; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141a15; --card:#1e261f; --ink:#eef2ea; --muted:#b5c0b4; --brand:#8fd3a3; --line:#3b473c; --alert:#ffb59c; --ok:#8fd3a3; --warn:#f2d36b; } }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.6rem; margin:.25rem 0; color:var(--brand); }
+  p { margin:.4rem 0; }
+  .muted { color:var(--muted); font-size:.92rem; }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+  button, .file { font:inherit; font-weight:600; padding:12px 18px; min-height:48px; border-radius:8px; border:2px solid var(--brand); cursor:pointer; background:var(--card); color:var(--brand); display:inline-flex; align-items:center; }
+  button.primary { background:var(--brand); color:var(--bg); }
+  button:focus-visible, .file:focus-within { outline:3px solid var(--ink); outline-offset:2px; }
+  .file input { position:absolute; opacity:0; width:1px; height:1px; }
+  .stage { position:relative; background:#000; border-radius:8px; overflow:hidden; display:none; }
+  .stage.on { display:block; }
+  .stage video, .stage img { display:block; width:100%; height:auto; }
+  .stage canvas { position:absolute; inset:0; width:100%; height:100%; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:14px 0; }
+  .status { font-size:1.2rem; font-weight:700; margin:0 0 .25rem; }
+  .possivel_doenca { color:var(--alert); } .folha_saudavel { color:var(--ok); } .inconclusivo, .nada_detectado, .erro { color:var(--warn); }
+  ul { list-style:none; padding:0; margin:.5rem 0 0; }
+  li { border-top:1px solid var(--line); padding:.6rem 0; }
+  .aviso { font-size:.92rem; color:var(--muted); border-top:1px solid var(--line); padding-top:.6rem; margin-top:.6rem; }
+  .perf { font-variant-numeric:tabular-nums; }
+  @media (min-width: 1000px) {
+    main { max-width:1240px; }
+    .workspace { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:20px; align-items:start; }
+    .workspace .card { margin-top:0; }
+    .stage.on { display:inline-block; vertical-align:top; }
+    .stage video, .stage img { width:auto; max-width:100%; max-height:calc(100vh - 240px); }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>AgroFácil Visão</h1>
+  <p>Aponte a câmera para uma folha ou envie uma foto. Vamos procurar sinais de doença.</p>
+  <p class="muted">Tomate, milho, batata, pimentão, abóbora, soja, morango e uva. A foto é analisada e descartada, nada fica guardado.</p>
+
+  <div class="actions">
+    <button id="toggle" class="primary" type="button">Ligar câmera</button>
+    <label class="file">Enviar foto<input id="file" type="file" accept="image/*"></label>
+  </div>
+
+  <div class="workspace">
+    <div>
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted hidden></video>
+        <img id="photo" alt="Foto enviada para análise" hidden>
+        <canvas id="overlay" aria-hidden="true"></canvas>
+      </div>
+      <p class="muted perf" id="perf"></p>
+    </div>
+    <section class="card" id="result" aria-live="polite" hidden></section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const video = $("video"), photo = $("photo"), overlay = $("overlay"), stage = $("stage"), result = $("result"), perf = $("perf"), toggle = $("toggle");
+const MAX_SIDE = 480;
+let stream = null, lastSpoken = "";
+
+function escapeHtml(text) { const d = document.createElement("div"); d.textContent = text; return d.innerHTML; }
+
+function draw(detections, width, height) {
+  overlay.width = width; overlay.height = height;
+  const ctx = overlay.getContext("2d");
+  ctx.clearRect(0, 0, width, height);
+  const scale = Math.max(1, width / 480);
+  ctx.lineWidth = 3 * scale;
+  ctx.font = `600 ${15 * scale}px system-ui, sans-serif`;
+  // Palpites fracos só aparecem quando não há nada confiável para mostrar.
+  const trusted = detections.filter(d => d.confiavel);
+  for (const d of trusted.length ? trusted : detections) {
+    const x = d.caixa.x1 * width, y = d.caixa.y1 * height, w = (d.caixa.x2 - d.caixa.x1) * width, h = (d.caixa.y2 - d.caixa.y1) * height;
+    const color = !d.confiavel ? "#f2d36b" : d.tipo === "doenca" ? "#ff5a36" : "#3ddc84";
+    ctx.strokeStyle = color; ctx.setLineDash(d.confiavel ? [] : [8 * scale, 6 * scale]); ctx.strokeRect(x, y, w, h);
+    const label = `${d.cultura}: ${d.condicao} ${Math.round(d.confianca * 100)}%`;
+    const tw = ctx.measureText(label).width + 10 * scale, th = 22 * scale, ty = y > th ? y - th : y, tx = Math.max(0, Math.min(x, width - tw));
+    ctx.setLineDash([]); ctx.fillStyle = color; ctx.fillRect(tx, ty, tw, th);
+    ctx.fillStyle = "#000"; ctx.fillText(label, tx + 5 * scale, ty + 16 * scale);
+  }
+}
+
+function show(data) {
+  const key = data.status + data.deteccoes.filter(d => d.confiavel).map(d => d.classe).join();
+  if (key === lastSpoken) return;
+  lastSpoken = key;
+  const seen = new Set();
+  const items = data.deteccoes.filter(d => d.confiavel && !seen.has(d.classe) && seen.add(d.classe)).map(d =>
+    `<li><strong>${escapeHtml(d.cultura)}: ${escapeHtml(d.condicao)}</strong> (confiança ${Math.round(d.confianca * 100)}%)<br>${escapeHtml(d.orientacao)}</li>`).join("");
+  result.innerHTML = `<p class="status ${data.status}">${escapeHtml(data.mensagem)}</p>${items ? `<ul>${items}</ul>` : ""}<p class="aviso">${escapeHtml(data.aviso)}</p>`;
+  result.hidden = false;
+}
+
+function showError(message) {
+  lastSpoken = "";
+  result.innerHTML = `<p class="status erro">${escapeHtml(message)}</p>`;
+  result.hidden = false;
+}
+
+async function send(blob) {
+  const form = new FormData();
+  form.append("imagem", blob, "folha.jpg");
+  const response = await fetch("/v1/detections", { method: "POST", body: form });
+  if (response.status === 503) return null;
+  if (!response.ok) { const e = await response.json().catch(() => ({})); throw new Error(e.detail || "Não foi possível analisar a imagem."); }
+  return response.json();
+}
+
+function frameBlob(source, width, height) {
+  const scale = Math.min(1, MAX_SIDE / Math.max(width, height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(width * scale); canvas.height = Math.round(height * scale);
+  canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
+  return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.75));
+}
+
+async function liveLoop() {
+  let frames = 0, windowStart = performance.now();
+  while (stream) {
+    if (video.readyState < 2) { await new Promise(r => setTimeout(r, 100)); continue; }
+    try {
+      const data = await send(await frameBlob(video, video.videoWidth, video.videoHeight));
+      if (!stream) break;
+      if (!data) { await new Promise(r => setTimeout(r, 500)); continue; }
+      draw(data.deteccoes, video.videoWidth, video.videoHeight);
+      show(data);
+      frames++;
+      const elapsed = performance.now() - windowStart;
+      if (elapsed > 1000) {
+        perf.textContent = `${(frames * 1000 / elapsed).toFixed(1)} análises por segundo · modelo ${data.inferencia_ms} ms`;
+        frames = 0; windowStart = performance.now();
+      }
+    } catch (err) {
+      showError("Sem conexão com o serviço. Tentando de novo...");
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+}
+
+function stopCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null; video.srcObject = null; video.hidden = true;
+  toggle.textContent = "Ligar câmera";
+}
+
+toggle.addEventListener("click", async () => {
+  if (stream) { stopCamera(); stage.classList.remove("on"); perf.textContent = ""; return; }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 640 } }, audio: false });
+  } catch (err) {
+    stream = null;
+    showError("Não foi possível abrir a câmera. Você pode enviar uma foto.");
+    return;
+  }
+  photo.hidden = true; video.hidden = false; video.srcObject = stream;
+  await video.play();
+  stage.classList.add("on");
+  toggle.textContent = "Desligar câmera";
+  liveLoop();
+});
+
+$("file").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  stopCamera();
+  perf.textContent = "";
+  photo.src = URL.createObjectURL(file);
+  photo.hidden = false;
+  stage.classList.add("on");
+  await photo.decode().catch(() => {});
+  draw([], photo.naturalWidth || 1, photo.naturalHeight || 1);
+  result.hidden = false; result.innerHTML = `<p class="status">Analisando...</p>`; lastSpoken = "";
+  try {
+    const data = await send(file);
+    if (!data) { showError("Serviço ocupado. Tente de novo em instantes."); return; }
+    draw(data.deteccoes, photo.naturalWidth, photo.naturalHeight);
+    show(data);
+    perf.textContent = `Modelo: ${data.inferencia_ms} ms`;
+  } catch (err) { showError(err.message); }
+  event.target.value = "";
+});
+</script>
+</body>
+</html>

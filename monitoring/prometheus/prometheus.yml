@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: agrofacil-local
+    authorization:
+      credentials_file: /run/secrets/metrics_token
+    static_configs:
+      - targets: ["api:8000"]
+        labels:
+          ambiente: local
+
+  # Alvo gerado por scripts/monitoring_setup.sh a partir da saída do Terraform.
+  - job_name: agrofacil-azure
+    scheme: https
+    authorization:
+      credentials_file: /run/secrets/metrics_token
+    file_sd_configs:
+      - files: ["/etc/prometheus/targets/*.json"]

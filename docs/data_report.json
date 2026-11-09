@@ -1,0 +1,276 @@
+{
+  "fonte_commit": "4730a233a555b30ee98e0879c63ad25d82407455",
+  "contagens": {
+    "TEST: anotação incompatível com a imagem": 2,
+    "TEST: classe fora do escopo": 66,
+    "TEST: sem caixas": 1,
+    "TEST: sem par imagem/xml": 2,
+    "TEST: total": 239,
+    "TRAIN: anotação incompatível com a imagem": 20,
+    "TRAIN: classe fora do escopo": 613,
+    "TRAIN: sem caixas": 10,
+    "TRAIN: sem par imagem/xml": 9,
+    "TRAIN: total": 2349,
+    "grupos com vazamento treino/teste": 13,
+    "grupos de duplicatas com rótulos conflitantes": 32,
+    "imagens removidas por duplicidade": 59
+  },
+  "train": {
+    "imagens": 1392,
+    "caixas": 4625,
+    "por_classe": {
+      "Tomato leaf": {
+        "caixas": 326,
+        "imagens": 54
+      },
+      "Tomato Early blight leaf": {
+        "caixas": 134,
+        "imagens": 58
+      },
+      "Tomato Septoria leaf spot": {
+        "caixas": 320,
+        "imagens": 111
+      },
+      "Tomato leaf bacterial spot": {
+        "caixas": 213,
+        "imagens": 84
+      },
+      "Tomato leaf late blight": {
+        "caixas": 151,
+        "imagens": 79
+      },
+      "Tomato leaf mosaic virus": {
+        "caixas": 173,
+        "imagens": 37
+      },
+      "Tomato leaf yellow virus": {
+        "caixas": 642,
+        "imagens": 58
+      },
+      "Tomato mold leaf": {
+        "caixas": 239,
+        "imagens": 71
+      },
+      "Corn Gray leaf spot": {
+        "caixas": 63,
+        "imagens": 52
+      },
+      "Corn leaf blight": {
+        "caixas": 292,
+        "imagens": 143
+      },
+      "Corn rust leaf": {
+        "caixas": 93,
+        "imagens": 85
+      },
+      "Potato leaf early blight": {
+        "caixas": 254,
+        "imagens": 87
+      },
+      "Potato leaf late blight": {
+        "caixas": 194,
+        "imagens": 77
+      },
+      "Bell_pepper leaf": {
+        "caixas": 270,
+        "imagens": 43
+      },
+      "Bell_pepper leaf spot": {
+        "caixas": 182,
+        "imagens": 45
+      },
+      "Squash Powdery mildew leaf": {
+        "caixas": 219,
+        "imagens": 105
+      },
+      "Soyabean leaf": {
+        "caixas": 206,
+        "imagens": 48
+      },
+      "Strawberry leaf": {
+        "caixas": 388,
+        "imagens": 75
+      },
+      "grape leaf": {
+        "caixas": 161,
+        "imagens": 48
+      },
+      "grape leaf black rot": {
+        "caixas": 105,
+        "imagens": 46
+      }
+    }
+  },
+  "val": {
+    "imagens": 246,
+    "caixas": 826,
+    "por_classe": {
+      "Tomato leaf": {
+        "caixas": 35,
+        "imagens": 8
+      },
+      "Tomato Early blight leaf": {
+        "caixas": 41,
+        "imagens": 10
+      },
+      "Tomato Septoria leaf spot": {
+        "caixas": 70,
+        "imagens": 20
+      },
+      "Tomato leaf bacterial spot": {
+        "caixas": 31,
+        "imagens": 15
+      },
+      "Tomato leaf late blight": {
+        "caixas": 37,
+        "imagens": 14
+      },
+      "Tomato leaf mosaic virus": {
+        "caixas": 47,
+        "imagens": 7
+      },
+      "Tomato leaf yellow virus": {
+        "caixas": 128,
+        "imagens": 10
+      },
+      "Tomato mold leaf": {
+        "caixas": 33,
+        "imagens": 13
+      },
+      "Corn Gray leaf spot": {
+        "caixas": 9,
+        "imagens": 9
+      },
+      "Corn leaf blight": {
+        "caixas": 41,
+        "imagens": 25
+      },
+      "Corn rust leaf": {
+        "caixas": 18,
+        "imagens": 15
+      },
+      "Potato leaf early blight": {
+        "caixas": 37,
+        "imagens": 15
+      },
+      "Potato leaf late blight": {
+        "caixas": 32,
+        "imagens": 13
+      },
+      "Bell_pepper leaf": {
+        "caixas": 39,
+        "imagens": 8
+      },
+      "Bell_pepper leaf spot": {
+        "caixas": 34,
+        "imagens": 8
+      },
+      "Squash Powdery mildew leaf": {
+        "caixas": 30,
+        "imagens": 18
+      },
+      "Soyabean leaf": {
+        "caixas": 37,
+        "imagens": 8
+      },
+      "Strawberry leaf": {
+        "caixas": 74,
+        "imagens": 13
+      },
+      "grape leaf": {
+        "caixas": 44,
+        "imagens": 9
+      },
+      "grape leaf black rot": {
+        "caixas": 9,
+        "imagens": 8
+      }
+    }
+  },
+  "test": {
+    "imagens": 168,
+    "caixas": 348,
+    "por_classe": {
+      "Tomato leaf": {
+        "caixas": 27,
+        "imagens": 8
+      },
+      "Tomato Early blight leaf": {
+        "caixas": 18,
+        "imagens": 8
+      },
+      "Tomato Septoria leaf spot": {
+        "caixas": 24,
+        "imagens": 11
+      },
+      "Tomato leaf bacterial spot": {
+        "caixas": 14,
+        "imagens": 9
+      },
+      "Tomato leaf late blight": {
+        "caixas": 14,
+        "imagens": 10
+      },
+      "Tomato leaf mosaic virus": {
+        "caixas": 36,
+        "imagens": 10
+      },
+      "Tomato leaf yellow virus": {
+        "caixas": 42,
+        "imagens": 6
+      },
+      "Tomato mold leaf": {
+        "caixas": 16,
+        "imagens": 6
+      },
+      "Corn Gray leaf spot": {
+        "caixas": 4,
+        "imagens": 4
+      },
+      "Corn leaf blight": {
+        "caixas": 12,
+        "imagens": 12
+      },
+      "Corn rust leaf": {
+        "caixas": 10,
+        "imagens": 10
+      },
+      "Potato leaf early blight": {
+        "caixas": 17,
+        "imagens": 8
+      },
+      "Potato leaf late blight": {
+        "caixas": 10,
+        "imagens": 8
+      },
+      "Bell_pepper leaf": {
+        "caixas": 10,
+        "imagens": 7
+      },
+      "Bell_pepper leaf spot": {
+        "caixas": 15,
+        "imagens": 9
+      },
+      "Squash Powdery mildew leaf": {
+        "caixas": 6,
+        "imagens": 6
+      },
+      "Soyabean leaf": {
+        "caixas": 20,
+        "imagens": 8
+      },
+      "Strawberry leaf": {
+        "caixas": 30,
+        "imagens": 8
+      },
+      "grape leaf": {
+        "caixas": 15,
+        "imagens": 12
+      },
+      "grape leaf black rot": {
+        "caixas": 8,
+        "imagens": 8
+      }
+    }
+  }
+}
