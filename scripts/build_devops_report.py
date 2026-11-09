@@ -239,7 +239,6 @@ def main():
              "SSH nem RDP. O único ingress é HTTPS na 443; HTTP recebe 301 para HTTPS. O registro de imagens não tem usuário admin."],
             ["Segredos", "Token de métricas como secret do Container App; no GitHub só há identificadores do OIDC, não senhas."],
         ], [5 * cm, 11.4 * cm]),
-        Spacer(1, 6),
         figure(EV / "01_terraform_plan_limpo.png", 14, "Figura 3. terraform plan sem diferenças: a nuvem corresponde ao código."),
         figure(EV / "02_recursos_azure.png", 16, "Figura 4. Recursos criados pelo Terraform no grupo rg-agrofacil-prod."),
         figure(EV / "03_sem_porta_admin.png", 16, "Figura 5. Ingress só HTTPS (HTTP é redirecionado), registro sem usuário "
@@ -258,7 +257,6 @@ def main():
             ["Deploy", "azure/login (OIDC) + az containerapp update", "só roda em main, depois de tudo passar"],
             ["Verificação", "teste de fumaça em /health", "a nova versão não responde"],
         ], [2.8 * cm, 7 * cm, 6.6 * cm]),
-        Spacer(1, 6),
         ListFlowable([ListItem(Paragraph(t, BODY), leftIndent=12) for t in [
             "<b>Sem senha de nuvem no GitHub.</b> Os GitHub Secrets guardam só os identificadores do OIDC. O Azure aceita o "
             "token apenas do environment production deste repositório, identificado pelos IDs imutáveis do dono e do repositório.",
@@ -307,7 +305,6 @@ def main():
             ["Saturação", "inference_slots_in_use / inference_slots_max e recusas 503", "mais de 0,5 recusa/s por 1 min"],
             ["Disponibilidade", "up", "API fora do ar por 1 min"],
         ], [3 * cm, 7.2 * cm, 6.2 * cm]),
-        Spacer(1, 6),
         figure(EV / "20_grafana_sinais_de_ouro.png", 16.4, "Figura 13. Painel do Grafana com os quatro sinais de ouro do MVP no Azure, durante o teste de carga."),
         figure(EV / "21_prometheus_alerta_disparado.png", 16.4, "Figura 14. Alerta disparado no Prometheus durante o teste de carga."),
         figure(EV / "22_prometheus_alvos.png", 16.4, "Figura 15. Alvos monitorados: API local e API no Azure."),

@@ -33,10 +33,10 @@ BRAND = colors.HexColor("#1f5c34")
 
 pdfmetrics.registerFont(TTFont("Arial", "/System/Library/Fonts/Supplemental/Arial.ttf"))
 pdfmetrics.registerFont(TTFont("Arial-Bold", "/System/Library/Fonts/Supplemental/Arial Bold.ttf"))
-BODY = ParagraphStyle("body", fontName="Arial", fontSize=10.5, leading=15, alignment=TA_JUSTIFY, spaceAfter=7)
-SMALL = ParagraphStyle("small", parent=BODY, fontSize=8.5, leading=11, textColor=colors.HexColor(INK_2), alignment=0)
-H1 = ParagraphStyle("h1", fontName="Arial-Bold", fontSize=15, leading=20, textColor=BRAND, spaceBefore=10, spaceAfter=8, keepWithNext=1)
-H2 = ParagraphStyle("h2", fontName="Arial-Bold", fontSize=12, leading=16, spaceBefore=8, spaceAfter=5, keepWithNext=1)
+BODY = ParagraphStyle("body", fontName="Arial", fontSize=10.5, leading=15.5, alignment=TA_JUSTIFY, spaceAfter=9)
+SMALL = ParagraphStyle("small", parent=BODY, fontSize=8.5, leading=11.5, textColor=colors.HexColor(INK_2), alignment=0, spaceBefore=2, spaceAfter=8)
+H1 = ParagraphStyle("h1", fontName="Arial-Bold", fontSize=15, leading=20, textColor=BRAND, spaceBefore=20, spaceAfter=10, keepWithNext=1)
+H2 = ParagraphStyle("h2", fontName="Arial-Bold", fontSize=12, leading=16, spaceBefore=14, spaceAfter=7, keepWithNext=1)
 TITLE = ParagraphStyle("title", fontName="Arial-Bold", fontSize=24, leading=30, textColor=BRAND, spaceAfter=12)
 CELL = ParagraphStyle("cell", fontName="Arial", fontSize=8.5, leading=11)
 CELL_B = ParagraphStyle("cellb", parent=CELL, fontName="Arial-Bold")
@@ -68,8 +68,10 @@ def table(rows, widths, header=True):
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eef2ea") if header else colors.white),
         ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#c9cfc3")),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 4.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 4.5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6), ("RIGHTPADDING", (0, 0), (-1, -1), 6),
     ]))
+    t.spaceBefore, t.spaceAfter = 4, 12
     return t
 
 
@@ -78,8 +80,8 @@ def figure(path, width_cm, caption):
         return Paragraph(f"[figura ausente: {Path(path).name}]", SMALL)
     reader = Image(str(path))
     ratio = reader.imageHeight / reader.imageWidth
-    return KeepTogether([Image(str(path), width=width_cm * cm, height=width_cm * cm * ratio), Spacer(1, 3),
-                         Paragraph(caption, SMALL), Spacer(1, 8)])
+    return KeepTogether([Image(str(path), width=width_cm * cm, height=width_cm * cm * ratio), Spacer(1, 6),
+                         Paragraph(caption, SMALL), Spacer(1, 10)])
 
 
 def style_axes(ax):
