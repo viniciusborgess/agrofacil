@@ -27,8 +27,9 @@ REGION = "brazilsouth"
 MONTH_S = 30 * 24 * 3600
 
 
-def sh(command):
-    return subprocess.run(command, shell=True, cwd=ROOT, capture_output=True, text=True).stdout.strip()
+def terraform_output(name):
+    return subprocess.run(["terraform", "-chdir=infra", "output", "-raw", name], cwd=ROOT,
+                          capture_output=True, text=True, check=True).stdout.strip()
 
 
 def prices():
@@ -160,7 +161,7 @@ def diagram(path):
 def main():
     EV.mkdir(parents=True, exist_ok=True)
     team = json.loads((ROOT / "docs/integrantes.json").read_text())
-    app_url = sh("terraform -chdir=infra output -raw app_url")
+    app_url = terraform_output("app_url")
     runs = json.loads((EV / "execucoes.json").read_text())
     failed, passed = runs["barrada"], runs["corrigida"]
     diagram(EV / "00_arquitetura.png")

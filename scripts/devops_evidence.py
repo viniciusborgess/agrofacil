@@ -21,7 +21,9 @@ ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 def sh(command):
-    result = subprocess.run(command, shell=True, cwd=ROOT, capture_output=True, text=True)
+    # Ferramenta local de coleta de evidências: os comandos são fixos neste arquivo (sem entrada externa)
+    # e precisam de pipes do shell. Não roda no pipeline nem em produção.
+    result = subprocess.run(command, shell=True, cwd=ROOT, capture_output=True, text=True)  # nosemgrep: python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
     return ANSI.sub("", (result.stdout + result.stderr).rstrip()).expandtabs(4)
 
 
