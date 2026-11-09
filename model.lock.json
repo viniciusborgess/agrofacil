@@ -1,0 +1,8 @@
+{
+  "repo": "viniciusborgess/agrofacil",
+  "tag": "modelo-v0",
+  "sha256": {
+    "agrofacil.onnx": "e029b6f4981d32bef14ac594778b05a4fab0bd3ee5ea1ae9245f2981917758b1",
+    "agrofacil.json": "ec6ea5007ec2e84441710f45c08e15cf6e51d25555cd1a6e78a32a66134000f0"
+  }
+}
