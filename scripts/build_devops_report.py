@@ -268,7 +268,7 @@ def main():
                "autorizado na credencial federada."),
         Paragraph("4.1 Execução barrada e execução corrigida", H2),
         Paragraph(
-            f"A barreira funcionou em um caso real, não simulado. No commit {failed['headSha'][:7]}, os quatro primeiros "
+            "A barreira funcionou em um caso real, não simulado. Em um push para a main, os quatro primeiros "
             "estágios passaram, mas o Trivy encontrou na imagem vulnerabilidades HIGH e CRITICAL com correção disponível: "
             "estouro de buffer no Pillow 11.3 (CRITICAL), negação de serviço na Starlette 0.46, falhas no zlib do Debian e "
             "em setuptools e wheel herdados da imagem base. O deploy não executou.", BODY),
