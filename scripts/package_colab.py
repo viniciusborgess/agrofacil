@@ -12,11 +12,15 @@ COLAB_ROOT = "/content/agrofacil"
 
 
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--data", default="plantdoc_yolo", help="pasta dentro de data/ (ex.: plantdoc_yolo_neg)")
+    args = ap.parse_args()
     OUT.mkdir(exist_ok=True)
-    data = ROOT / "data/plantdoc_yolo"
+    data = ROOT / "data" / args.data
     yaml = (data / "data.yaml").read_text().replace(str(ROOT), COLAB_ROOT)
     with zipfile.ZipFile(OUT / "agrofacil_colab.zip", "w", zipfile.ZIP_STORED) as z:
-        z.writestr("data/plantdoc_yolo/data.yaml", yaml)
+        z.writestr(f"data/{args.data}/data.yaml", yaml)
         for f in sorted(data.rglob("*")):
             if f.is_file() and f.name != "data.yaml" and not f.name.endswith(".cache"):
                 z.write(f, f.relative_to(ROOT))
@@ -33,7 +37,7 @@ def main():
                  f"os.makedirs('{COLAB_ROOT}', exist_ok=True)\nzipfile.ZipFile(nome).extractall('{COLAB_ROOT}')\n"
                  f"print(sorted(os.listdir('{COLAB_ROOT}')))"),
         ("code", "!pip -q install ultralytics==8.4.202"),
-        ("code", f"%cd {COLAB_ROOT}\n!python scripts/train.py --device 0 --batch 16 --workers 4"),
+        ("code", f"%cd {COLAB_ROOT}\n!python scripts/train.py --device 0 --batch 16 --workers 4 --data {COLAB_ROOT}/data/{args.data}/data.yaml"),
         ("code", f"%cd {COLAB_ROOT}/runs\n!zip -qr /content/agrofacil_treino.zip agrofacil_yolo11n_480\n"
                  "!tail -3 agrofacil_yolo11n_480/results.csv\nfiles.download('/content/agrofacil_treino.zip')"),
     ]

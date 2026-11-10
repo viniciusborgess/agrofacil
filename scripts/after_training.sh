@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 PY=.venv/bin/python
 while pgrep -f "scripts/train.py" >/dev/null; do sleep 60; done
 step() { echo "== $(date '+%F %T') $1"; shift; "$@" || { echo "FALHOU: $*"; exit 1; }; }
-step "avaliação" $PY scripts/evaluate.py
+step "avaliação" $PY scripts/evaluate.py ${EVAL_DATA:+--data "$EVAL_DATA"}
 step "testes" $PY -m pytest -q tests
 step "amostras" $PY scripts/select_samples.py
 rm -rf assets/video_build

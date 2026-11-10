@@ -193,6 +193,13 @@ def _false_positive_summary(paths):
     return {"imagens": len(paths), "status": counts, "resposta_indevida": rate(trusted)}
 
 
+def team_photos():
+    """Fotos de plantas da equipe guardadas fora do treino (ver scripts/add_negatives.py)."""
+    folder = ROOT / "data/plantdoc_yolo_neg/holdout_equipe"
+    paths = sorted(folder.glob("*.jpg")) if folder.exists() else []
+    return _false_positive_summary(paths) if paths else None
+
+
 def latency(args):
     """Mede inferência (com pré e pós-processamento) em uma imagem por vez."""
     from api.detector import Detector
@@ -239,7 +246,7 @@ def main():
     results = {
         "conf_decisao": conf, "validacao": val_metrics, "teste": test, "robustez_map50": robust,
         "produto": product_metrics(), "culturas_fora_do_escopo": out_of_scope_crops(),
-        "imagens_sem_planta": non_plant_images(), "latencia": latency(args),
+        "imagens_sem_planta": non_plant_images(), "plantas_da_equipe": team_photos(), "latencia": latency(args),
     }
     (OUT / "metrics.json").write_text(json.dumps(results, ensure_ascii=False, indent=2))
     shutil.rmtree(OUT / "tmp", ignore_errors=True)
