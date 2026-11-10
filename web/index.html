@@ -124,16 +124,52 @@ function frameBlob(source, width, height) {
   return new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.75));
 }
 
+// Na câmera ao vivo, cada quadro sozinho oscila. Só mostramos uma classe quando ela aparece com confiança
+// em pelo menos NEED dos últimos WINDOW quadros; palpites fracos não são desenhados.
+const WINDOW = 6, NEED = 4, MAX_AGE = 2;
+const FALLBACK = {
+  procurando: "Analisando... segure a câmera firme por um instante.",
+  inconclusivo: "Não temos certeza. Tire outra foto de perto, com boa luz e a folha em foco.",
+  nada_detectado: "Não encontramos uma folha conhecida.",
+};
+let history = [], lastBoxes = {}, messages = {};
+
+function resetStabilizer() { history = []; lastBoxes = {}; }
+
+function stabilize(data) {
+  messages[data.status] = data.mensagem;
+  const trusted = data.deteccoes.filter(d => d.confiavel);
+  history.push({ classes: new Set(trusted.map(d => d.classe)), status: data.status });
+  if (history.length > WINDOW) history.shift();
+  for (const c in lastBoxes) lastBoxes[c].age++;
+  for (const d of trusted) {
+    if (!lastBoxes[d.classe] || lastBoxes[d.classe].age > 0) lastBoxes[d.classe] = { boxes: [], age: 0 };
+    lastBoxes[d.classe].boxes.push(d);
+  }
+  const counts = {};
+  history.forEach(h => h.classes.forEach(c => { counts[c] = (counts[c] || 0) + 1; }));
+  const stable = Object.keys(counts).filter(c => counts[c] >= NEED);
+  const deteccoes = stable.flatMap(c => lastBoxes[c] && lastBoxes[c].age <= MAX_AGE ? lastBoxes[c].boxes : []);
+  let status;
+  if (deteccoes.some(d => d.tipo === "doenca")) status = "possivel_doenca";
+  else if (deteccoes.length) status = "folha_saudavel";
+  else if (history.length < NEED) status = "procurando";
+  else status = history.filter(h => h.status === "nada_detectado").length >= history.length / 2 ? "nada_detectado" : "inconclusivo";
+  return { status, mensagem: messages[status] || FALLBACK[status], deteccoes, aviso: data.aviso, inferencia_ms: data.inferencia_ms };
+}
+
 async function liveLoop() {
   let frames = 0, windowStart = performance.now();
+  resetStabilizer();
   while (stream) {
     if (video.readyState < 2) { await new Promise(r => setTimeout(r, 100)); continue; }
     try {
       const data = await send(await frameBlob(video, video.videoWidth, video.videoHeight));
       if (!stream) break;
       if (!data) { await new Promise(r => setTimeout(r, 500)); continue; }
-      draw(data.deteccoes, video.videoWidth, video.videoHeight);
-      show(data);
+      const steady = stabilize(data);
+      draw(steady.deteccoes, video.videoWidth, video.videoHeight);
+      show(steady);
       frames++;
       const elapsed = performance.now() - windowStart;
       if (elapsed > 1000) {
