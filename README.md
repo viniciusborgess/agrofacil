@@ -28,7 +28,7 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 | **Problema** | O produtor percebe a doença na folha tarde e não sabe qual é o primeiro cuidado |
 | **Proposta de valor** | Apontar o celular para a folha e saber, em segundos, se há sinal de doença, onde está e o que fazer primeiro |
 | **Arquitetura** | Navegador (câmera) → API FastAPI → YOLO11n em ONNX Runtime (CPU) → regras de decisão → JSON para a plataforma |
-| **Fontes de dados** | [PlantDoc](https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset) (CC BY 4.0), 20 classes de 8 culturas |
+| **Fontes de dados** | [PlantDoc](https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset) (CC BY 4.0), 20 classes de 8 culturas, mais 40 fotos próprias de uma orquídea com 2 classes anotadas pela equipe (`data/orquidea/anotacoes.json`) |
 | **Modelo de IA** | YOLO11n pré-treinado no COCO, com treinamento customizado (detecção de objetos) |
 | **Indicadores** | mAP@50 no teste, % de folhas doentes sinalizadas, % de doentes ditas saudáveis, tempo por imagem (`docs/results/metrics.json`) |
 | **Nuvem** | Azure, região Brazil South: Container Apps, Container Registry, Log Analytics, Storage (state do Terraform) e identidades gerenciadas |
@@ -49,6 +49,7 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 | Abóbora | oídio |
 | Uva | sadia, podridão-negra |
 | Soja, morango | sadia |
+| Orquídea | sadia, mancha na folha (fotos da equipe) |
 
 Pragas não estão cobertas: o dataset tem só 2 imagens da única praga anotada.
 
@@ -141,6 +142,8 @@ docker compose up -d             # Grafana em http://localhost:3000, Prometheus 
 uv pip install --python .venv/bin/python -r requirements-train.txt
 scripts/download_data.sh                      # PlantDoc, no commit registrado em docs/data_report.json
 .venv/bin/python scripts/prepare_data.py      # valida, deduplica e separa os dados
+.venv/bin/python scripts/add_negatives.py --extra ~/Desktop/minhas_plantas   # negativos e fotos da equipe
+.venv/bin/python scripts/add_orchid.py        # classes da orquídea, a partir de data/orquidea/anotacoes.json
 .venv/bin/python scripts/train.py --device 0 --batch 16   # GPU NVIDIA (usamos o Colab: scripts/package_colab.py)
 .venv/bin/python scripts/evaluate.py          # calibra, testa, exporta para ONNX
 .venv/bin/python -m pytest tests              # testes da API

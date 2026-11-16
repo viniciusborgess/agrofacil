@@ -19,7 +19,7 @@ def export(weights, imgsz, conf_decision, conf_min=0.15, iou=0.5, out=ROOT / "we
     shutil.copy(onnx_path, out / "agrofacil.onnx")
     shutil.copy(weights, out / "agrofacil.pt")
     (out / "agrofacil.json").write_text(json.dumps({
-        "version": "yolo11n-plantdoc20-v1",
+        "version": "yolo11n-plantdoc20-v1" if len(model.names) == 20 else f"yolo11n-plantdoc20-orquidea-v2",
         "classes": [model.names[i] for i in range(len(model.names))],
         "imgsz": imgsz,
         "conf_decision": conf_decision,

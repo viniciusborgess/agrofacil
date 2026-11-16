@@ -15,21 +15,32 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", default="plantdoc_yolo", help="pasta dentro de data/ (ex.: plantdoc_yolo_neg)")
+    ap.add_argument("--leve", action="store_true", help="reduz as imagens para 640 px (zip ~45%% menor, sobe mais rápido)")
     args = ap.parse_args()
     OUT.mkdir(exist_ok=True)
     data = ROOT / "data" / args.data
     yaml = (data / "data.yaml").read_text().replace(str(ROOT), COLAB_ROOT)
-    with zipfile.ZipFile(OUT / "agrofacil_colab.zip", "w", zipfile.ZIP_STORED) as z:
+    name = "agrofacil_colab_leve.zip" if args.leve else "agrofacil_colab.zip"
+    with zipfile.ZipFile(OUT / name, "w", zipfile.ZIP_STORED) as z:
         z.writestr(f"data/{args.data}/data.yaml", yaml)
         for f in sorted(data.rglob("*")):
             if f.is_file() and f.name != "data.yaml" and not f.name.endswith(".cache"):
-                z.write(f, f.relative_to(ROOT))
+                if args.leve and f.suffix.lower() == ".jpg":
+                    from PIL import Image
+                    import io
+                    im = Image.open(f).convert("RGB")
+                    im.thumbnail((640, 640))
+                    buf = io.BytesIO()
+                    im.save(buf, "JPEG", quality=90)
+                    z.writestr(str(f.relative_to(ROOT)), buf.getvalue())
+                else:
+                    z.write(f, f.relative_to(ROOT))
         z.write(ROOT / "weights/yolo11n.pt", "weights/yolo11n.pt")
         z.write(ROOT / "scripts/train.py", "scripts/train.py")
 
     cells = [
         ("markdown", "# AgroFácil · treino na GPU\n\n1. Menu **Ambiente de execução → Alterar o tipo de ambiente** → **GPU T4**.\n"
-                     "2. **Ambiente de execução → Executar tudo**.\n3. Quando pedir, envie `agrofacil_colab.zip`.\n"
+                     "2. **Ambiente de execução → Executar tudo**.\n3. Quando pedir, envie o zip gerado (`agrofacil_colab.zip` ou `agrofacil_colab_leve.zip`).\n"
                      "4. No fim, o navegador baixa `agrofacil_treino.zip`."),
         ("code", "!nvidia-smi --query-gpu=name,memory.total --format=csv"),
         ("code", "from google.colab import files\nimport os, zipfile\n"

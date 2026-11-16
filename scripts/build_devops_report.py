@@ -276,8 +276,12 @@ def main():
         figure(EV / "12b_trivy_vulnerabilidades.png", 16, "Figura 9. Achados do Trivy no log da execução barrada, com as versões corrigidas."),
         Paragraph(
             "A correção atualizou Pillow para 13.0, FastAPI para 0.162 (Starlette 1.10), aplicou as atualizações do "
-            "Debian no build e removeu setuptools e wheel da imagem. Na execução seguinte, todos os estágios passaram e "
-            "o deploy publicou a nova versão sozinho.", BODY),
+            "Debian no build e removeu setuptools e wheel da imagem. Na execução seguinte "
+            f"({link(f'{REPO_URL}/actions/runs/42676352810', '42676352810')}), o Trivy e os demais estágios de segurança "
+            "passaram; só o deploy falhou, porque o aplicativo ainda não existia no Azure (o primeiro deploy é feito pelo "
+            "Terraform, como na seção 9). Depois do terraform apply, a execução "
+            f"{link(f'{REPO_URL}/actions/runs/42677745745', '42677745745')} passou em todos os estágios e publicou a nova "
+            "versão sozinha.", BODY),
         figure(EV / "13_execucao_corrigida.png", 15, "Figura 10. Execução corrigida: todos os estágios aprovados e deploy automático."),
         Paragraph("4.2 Segundo bloqueio: Semgrep", H2),
         Paragraph(

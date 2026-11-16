@@ -76,6 +76,12 @@ CLASSES = {
         "Uva", "Podridão-negra", DOENCA,
         "Retire e leve para longe as folhas e os frutos atingidos, inclusive os secos que ficaram na planta.",
     ),
+    "Orchid leaf": ("Orquídea", "Folha sadia", SAUDAVEL, "Nenhuma mancha encontrada nesta folha. Continue olhando a planta toda semana."),
+    "Orchid leaf spot": (
+        "Orquídea", "Mancha na folha", DOENCA,
+        "Corte a parte manchada com tesoura limpa e passe canela em pó no corte. Regue só o substrato, "
+        "sem molhar as folhas, e deixe a planta em lugar bem ventilado.",
+    ),
 }
 
 AVISO = (
@@ -88,5 +94,5 @@ MENSAGENS = {
     "possivel_doenca": "Encontramos sinais de uma possível doença.",
     "folha_saudavel": "A folha parece saudável.",
     "inconclusivo": "Não temos certeza. Tire outra foto de perto, com boa luz e a folha em foco.",
-    "nada_detectado": "Não encontramos uma folha conhecida. Hoje reconhecemos tomate, milho, batata, pimentão, abóbora, soja, morango e uva.",
+    "nada_detectado": "Não encontramos uma folha conhecida. Hoje reconhecemos tomate, milho, batata, pimentão, abóbora, soja, morango, uva e orquídea.",
 }

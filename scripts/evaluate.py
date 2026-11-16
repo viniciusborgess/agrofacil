@@ -194,7 +194,25 @@ def _false_positive_summary(paths):
 
 
 def team_photos():
-    """Fotos de plantas da equipe guardadas fora do treino (ver scripts/add_negatives.py)."""
+    """Fotos da equipe guardadas fora do treino.
+
+    Com as classes da orquídea (scripts/add_orchid.py), mede se o produto reconhece a orquídea nas fotos de
+    teste e se aponta a mancha quando ela existe. Sem elas, as fotos são negativos (scripts/add_negatives.py).
+    """
+    from api.knowledge import CLASSES
+    if "Orchid leaf" in CLASSES and (DATA / "orquidea.json").exists():
+        names = YOLO(ROOT / "weights/agrofacil.pt").names
+        paths = sorted((DATA / "images/test").glob("equipe_*.jpg"))
+        orchid, spot_found, counts = [], [], {}
+        for path, status, found in statuses(paths):
+            counts[status] = counts.get(status, 0) + 1
+            labels = (DATA / "labels/test" / f"{path.stem}.txt").read_text().splitlines()
+            has_spot = any(names[int(l.split()[0])] == "Orchid leaf spot" for l in labels)
+            orchid.append(any(d["cultura"] == "Orquídea" for d in found))
+            if has_spot:
+                spot_found.append(status == "possivel_doenca")
+        return {"imagens": len(paths), "status": counts, "orquidea_reconhecida": rate(orchid),
+                "mancha_sinalizada": rate(spot_found)}
     folder = ROOT / "data/plantdoc_yolo_neg/holdout_equipe"
     paths = sorted(folder.glob("*.jpg")) if folder.exists() else []
     return _false_positive_summary(paths) if paths else None
@@ -222,6 +240,7 @@ def latency(args):
 
 
 def main():
+    global DATA
     ap = argparse.ArgumentParser()
     ap.add_argument("--weights", type=Path, default=ROOT / "runs/agrofacil_yolo11n_480/weights/best.pt")
     ap.add_argument("--data", default=str(DATA / "data.yaml"))
@@ -230,6 +249,7 @@ def main():
     ap.add_argument("--device", default="mps")
     ap.add_argument("--workers", type=int, default=2)
     args = ap.parse_args()
+    DATA = Path(args.data).parent  # robustez e métricas de produto usam o mesmo teste do --data
     OUT.mkdir(parents=True, exist_ok=True)
 
     model = YOLO(args.weights)

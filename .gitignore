@@ -6,7 +6,8 @@ __pycache__/
 .env
 
 # Dados: baixe e prepare com os scripts do README.
-data/
+data/*
+!data/orquidea/
 
 # Só os resultados selecionados vão para docs/results.
 runs/
