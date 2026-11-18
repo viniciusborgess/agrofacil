@@ -22,7 +22,7 @@ from reportlab.lib.styles import ParagraphStyle  # noqa: E402
 from reportlab.lib.units import cm  # noqa: E402
 from reportlab.pdfbase import pdfmetrics  # noqa: E402
 from reportlab.pdfbase.ttfonts import TTFont  # noqa: E402
-from reportlab.platypus import (Image, KeepTogether, ListFlowable, ListItem, PageBreak, Paragraph,  # noqa: E402
+from reportlab.platypus import (CondPageBreak, Image, KeepTogether, ListFlowable, ListItem, PageBreak, Paragraph,  # noqa: E402
                                 SimpleDocTemplate, Spacer, Table, TableStyle)
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -153,6 +153,18 @@ def main():
     cpu2 = lat["ONNX CPU, 2 thread(s)"]
     epochs_run = sum(1 for _ in args.results_csv.open()) - 1
     samples = json.loads((ROOT / "assets/samples/manifest.json").read_text())["uploads"]
+    # Orquídea da equipe (scripts/add_orchid.py): classes novas medidas à parte das 20 do PlantDoc.
+    orq_ann = json.loads((ROOT / "data/orquidea/anotacoes.json").read_text())["imagens"]
+    orq_boxes = sum(len(b) for b in orq_ann.values())
+    orq_spots = sum(1 for b in orq_ann.values() for x in b if x["classe"] == "Orchid leaf spot")
+    orq = m["plantas_da_equipe"]
+    orq_cls = [c for c in test["por_classe"] if c["classe"].startswith("Orchid")]
+    pd_cls = [c for c in test["por_classe"] if not c["classe"].startswith("Orchid")]
+    pd_map50 = sum(c["map50"] for c in pd_cls) / len(pd_cls)
+    pd_map5095 = sum(c["map50_95"] for c in pd_cls) / len(pd_cls)
+    neg_file = ROOT / "data/plantdoc_yolo_neg/negativos.json"
+    neg = json.loads(neg_file.read_text())["contagens"]["negativos PlantDoc"] if neg_file.exists() else 603
+    OOS_V1 = 0.879  # resposta indevida do modelo v1 (sem negativos) em culturas desconhecidas
 
     chart_training(args.results_csv, FIG / "treino.png")
     per_class = sorted(tr["por_classe"].items(), key=lambda kv: -kv[1]["caixas"])
@@ -165,25 +177,24 @@ def main():
         "por perto, o que atrasa o manejo e aumenta perdas. Este trabalho apresenta o AgroFácil Visão, componente de "
         "visão computacional da plataforma AgroFácil, que detecta e localiza em tempo real folhas sadias e doentes de "
         "oito culturas, a partir da câmera do celular ou de uma foto. Treinamos de forma customizada um detector YOLO11n, "
-        "pré-treinado no COCO, com o dataset aberto PlantDoc, restrito a 20 classes. Antes do treino, auditamos os "
-        f"dados: removemos {cnt['imagens removidas por duplicidade']} duplicatas, inclusive "
-        f"{cnt['grupos com vazamento treino/teste']} casos de vazamento entre treino e teste, e descartamos anotações "
-        "incompatíveis. O limiar de decisão foi calibrado apenas na validação, e o teste foi usado uma única vez. "
-        f"No conjunto de teste, com {te['imagens']} imagens, o modelo obteve mAP@50 de {num(test['map50'])} e "
-        f"mAP@50-95 de {num(test['map50_95'])}. Na decisão entregue ao produtor, sinalizou "
+        "pré-treinado no COCO, com 20 classes do dataset aberto PlantDoc e duas classes próprias, folha sadia e folha "
+        f"com mancha, anotadas em {len(orq_ann)} fotos de uma orquídea da equipe. Auditamos os dados, removendo "
+        f"{cnt['imagens removidas por duplicidade']} duplicatas e casos de vazamento entre treino e teste, e incluímos "
+        "fotos de outras culturas como exemplos sem nada a detectar. O limiar foi calibrado só na validação. No teste, "
+        f"o mAP@50 foi de {num(pd_map50)} nas classes do PlantDoc. Na decisão entregue ao produtor, o sistema sinalizou "
         f"{pct(p['doente_sinalizada']['valor'])} das folhas doentes e chamou de saudáveis "
-        f"{pct(p['doente_dita_saudavel']['valor'])} delas. Exportado para ONNX, processa cerca de "
-        f"{round(cpu2['fps'])} imagens por segundo em CPU, sem placa de vídeo. Também medimos o comportamento fora do "
-        "cenário ideal, com fotos degradadas, culturas desconhecidas e imagens sem planta. A solução é servida por uma "
-        "API que não armazena imagens, devolve orientações em linguagem simples e recomenda confirmação humana. Os "
-        "resultados mostram viabilidade como ferramenta de triagem, não de diagnóstico, sobretudo porque os dados não "
-        "vêm de lavouras brasileiras e quase não contêm pragas. O código, os dados de avaliação e as instruções para "
-        "reproduzir tudo estão no repositório público do projeto."
+        f"{pct(p['doente_dita_saudavel']['valor'])} delas. Nas {orq['imagens']} fotos da orquídea reservadas para "
+        f"teste, reconheceu a planta em todas e apontou a mancha em {pct(orq['mancha_sinalizada']['valor'], 0)}. "
+        f"Exportado para ONNX, processa cerca de {round(cpu2['fps'])} imagens por segundo em CPU. Também medimos fotos "
+        "degradadas, culturas desconhecidas e imagens sem planta. A API não armazena imagens, orienta em linguagem "
+        "simples e recomenda confirmação humana. Os resultados mostram viabilidade como triagem, não como diagnóstico, "
+        "porque os dados públicos não vêm de lavouras brasileiras e a orquídea é uma única planta. O código e as "
+        "instruções para reproduzir tudo estão no repositório público."
     )
     objetivo = (
-        "Treinar de forma customizada um detector de objetos YOLO11n que localize e classifique, em tempo real e em "
-        "CPU comum, folhas sadias e doentes de oito culturas da agricultura familiar, integrá-lo à plataforma AgroFácil "
-        "por meio de uma API segura e medir com rigor seu desempenho e seus limites."
+        "Treinar de forma customizada um detector YOLO11n que localize e classifique, em tempo real e em CPU comum, "
+        "folhas sadias e doentes de oito culturas e de uma orquídea fotografada pela equipe, integrá-lo ao AgroFácil "
+        "por uma API segura e medir seu desempenho e seus limites."
     )
     assert 235 <= words(resumo) <= 250, f"resumo com {words(resumo)} palavras"
     assert 45 <= words(objetivo) <= 50, f"objetivo com {words(objetivo)} palavras"
@@ -198,8 +209,8 @@ def main():
         Paragraph("Integrantes", H2),
         table([["Nome completo", "RM"]] + [[t["nome"], t["rm"]] for t in team], [10 * cm, 4 * cm]),
         Spacer(1, 1.2 * cm),
-        Paragraph(f"Repositório: {args.repo_url}", BODY),
-        Paragraph(f"Vídeo de demonstração: {args.video_url}", BODY),
+        Paragraph(f'Repositório: <link href="{args.repo_url}" color="blue">{args.repo_url}</link>', BODY),
+        Paragraph(f'Vídeo de demonstração: <link href="{args.video_url}" color="blue">{args.video_url}</link>' if args.video_url.startswith("http") else f"Vídeo de demonstração: {args.video_url}", BODY),
         PageBreak(),
 
         Paragraph("Resumo", H1),
@@ -235,7 +246,10 @@ def main():
             ["YOLO11n (Ultralytics)", "Arquitetura de detecção de um estágio: backbone convolucional, pescoço com fusão de "
              "escalas e cabeça sem âncoras, que prevê caixa e classe para cada célula.",
              "É o menor modelo da família (2,6 milhões de parâmetros), adequado a CPU e celulares de entrada."],
-            ["Transfer learning (COCO)", "Pesos pré-treinados em 80 classes gerais, ajustados para as 20 classes do projeto.",
+            ["Fotos próprias (orquídea)", f"{len(orq_ann)} fotos de uma orquídea (Dendrobium) da equipe, com {orq_boxes} caixas "
+             f"anotadas à mão, {orq_spots} delas em folhas com mancha.",
+             "Mostra o pipeline aplicado a uma planta real, fora do dataset público."],
+            ["Transfer learning (COCO)", "Pesos pré-treinados em 80 classes gerais, ajustados para as 22 classes do projeto.",
              "Com cerca de 1.400 imagens de treino, partir do zero não convergiria bem."],
             ["PyTorch + CUDA (Google Colab)", "Treino em uma GPU NVIDIA T4 gratuita do Google Colab.",
              "No notebook da equipe (Apple M1, 8 GB) cada época levava cerca de 17 minutos; na T4, as 40 épocas levaram cerca de 13."],
@@ -264,6 +278,13 @@ def main():
             f"<b>Divisão.</b> Do treino oficial, separamos 15% para validação, estratificado pela classe principal "
             f"(semente 42). Resultado: {tr['imagens']} imagens de treino, {va['imagens']} de validação e {te['imagens']} de "
             "teste, este intocado até a avaliação final.",
+            f"<b>Exemplos sem nada a detectar.</b> Acrescentamos {neg} fotos do PlantDoc de culturas fora do escopo "
+            "(maçã, pêssego, mirtilo etc.) com rótulo vazio, divididas entre treino e validação. Fotos quase idênticas "
+            "a qualquer imagem do teste foram descartadas, para não vazar para as métricas.",
+            f"<b>Orquídea da equipe.</b> Fotografamos uma orquídea com manchas escuras nas folhas e anotamos {orq_boxes} "
+            f"caixas em {len(orq_ann)} fotos, em duas classes: folha sadia e folha com mancha. Fotos quase idênticas "
+            "ficaram do mesmo lado da divisão: 28 no treino (repetidas três vezes, por serem poucas), 6 na validação e "
+            "6 no teste.",
             f"<b>Treino.</b> YOLO11n pré-treinado no COCO, imagens de 480 px, lote 16, até 40 épocas com taxa de aprendizado "
             f"cosseno e parada antecipada (paciência 12), em uma GPU NVIDIA T4 do Google Colab. Foram {epochs_run} épocas. Além do mosaico "
             "padrão, usamos rotação de 15° e inversão vertical, porque folhas não têm orientação fixa.",
@@ -284,8 +305,11 @@ def main():
         table([
             ["Conjunto", "mAP@50", "mAP@50-95", "Precisão", "Recall"],
             ["Validação", num(m["validacao"]["map50"]), num(m["validacao"]["map50_95"]), "-", "-"],
-            [f"Teste ({te['imagens']} imagens)", num(test["map50"]), num(test["map50_95"]), num(test["precisao"]), num(test["recall"])],
+            [f"Teste, 22 classes ({te['imagens']} PlantDoc + {orq['imagens']} orquídea)", num(test["map50"]), num(test["map50_95"]), num(test["precisao"]), num(test["recall"])],
+            ["Teste, só as 20 classes do PlantDoc", num(pd_map50), num(pd_map5095), "-", "-"],
         ], [5 * cm, 2.8 * cm, 2.8 * cm, 2.8 * cm, 2.8 * cm]),
+        Paragraph("As classes da orquídea têm métricas altas porque as fotos são de uma única planta, com o mesmo fundo; "
+                  "por isso mostramos também o resultado só nas classes do PlantDoc.", SMALL),
         Spacer(1, 8),
         figure(FIG / "treino.png", 15, "Figura 2. Evolução do mAP na validação durante o treino."),
         figure(ROOT / "docs/results/test/confusion_matrix_normalized.png", 13,
@@ -321,6 +345,8 @@ def main():
             ["Culturas que o modelo não conhece (maçã, pêssego, mirtilo etc.)", str(oos["imagens"]), ci(oos["resposta_indevida"])],
             ["Imagens sem planta (COCO128, sem pessoas nem vasos)", str(nonplant["imagens"]), ci(nonplant["resposta_indevida"])],
         ], [7.6 * cm, 2 * cm, 6.8 * cm]),
+        Paragraph(f"Os exemplos sem nada a detectar reduziram as respostas indevidas para culturas desconhecidas de "
+                  f"{pct(OOS_V1)}, na versão anterior do modelo, para {pct(oos['resposta_indevida']['valor'])}.", BODY),
 
         Paragraph("5.5 Tempo real", H2),
         table([["Execução (Apple M1, imagem por imagem)", "Mediana", "p95", "Imagens/s"]] + [
@@ -329,6 +355,7 @@ def main():
         Paragraph("Os tempos incluem pré e pós-processamento. Na demonstração pelo navegador, que inclui rede local e "
                   "desenho na tela, o sistema manteve uma taxa compatível com uso ao vivo.", SMALL),
 
+        CondPageBreak(9 * cm),
         Paragraph("5.6 Exemplos", H2),
         figure(args.build / "upload_doenca.png", 15, "Figura 5. Foto enviada: a caixa indica a folha, e o painel mostra a "
                "doença provável, o primeiro cuidado e o aviso de confirmação."),
@@ -336,6 +363,25 @@ def main():
                + ("pede outra foto." if json.loads((args.build / "demo.json").read_text())["respostas"]["foto_ruim"]["status"] == "inconclusivo" else "responde que não encontrou uma folha conhecida.")),
         figure(args.build / "upload_erro.png", 15, f"Figura 7. Erro real do modelo no teste: {samples['erro']['descricao']}. "
                "Por isso a decisão final fica com uma pessoa."),
+
+        Paragraph("5.7 Orquídea da equipe", H2),
+        Paragraph(
+            "Para testar o sistema com uma planta real, fora do dataset público, usamos uma orquídea da equipe que tem "
+            "manchas escuras na ponta de algumas folhas. As seis fotos de teste não foram usadas no treino nem na "
+            "calibração.", BODY),
+        table([
+            ["Indicador (fotos de teste da orquídea)", "Resultado"],
+            ["Orquídea reconhecida na foto", ci(orq["orquidea_reconhecida"])],
+            ["Fotos com mancha em que o sistema apontou possível doença", ci(orq["mancha_sinalizada"])],
+        ] + [[f"{'Folha sadia' if c['classe'] == 'Orchid leaf' else 'Folha com mancha'}: precisão / recall / mAP@50",
+              f"{num(c['precisao'], 2)} / {num(c['recall'], 2)} / {num(c['map50'], 2)}"] for c in orq_cls],
+            [9 * cm, 7.4 * cm]),
+        figure(args.build / "upload_orquidea.png", 15, "Figura 8. Foto de teste da orquídea: o sistema marca as folhas, "
+               "aponta a folha com mancha e mostra o primeiro cuidado."),
+        figure(args.build / "upload_orquidea_erro.png", 15, "Figura 9. Erro do modelo: nesta foto de perto, as manchas na "
+               "ponta da folha não foram detectadas, e a resposta foi folha saudável."),
+        Paragraph("Com seis fotos de uma só planta, esses números mostram que o caminho funciona, mas não medem "
+                  "desempenho geral para orquídeas.", SMALL),
 
         Paragraph("6. IA responsável, segurança e LGPD", H1),
         ListFlowable([ListItem(Paragraph(s, BODY), leftIndent=12) for s in [
@@ -351,19 +397,22 @@ def main():
 
         Paragraph("7. Conclusão", H1),
         Paragraph(
-            f"Treinamos de forma customizada um detector YOLO11n para 20 classes de folhas e o colocamos em produção em "
+            f"Treinamos de forma customizada um detector YOLO11n para 22 classes de folhas, 20 do PlantDoc e 2 de uma "
+            f"orquídea fotografada pela equipe, e o colocamos em produção em "
             f"CPU, com cerca de {round(cpu2['fps'])} imagens por segundo, integrado ao AgroFácil por uma API que não "
-            f"guarda fotos. No teste, o mAP@50 foi de {num(test['map50'])}, e o sistema sinalizou "
+            f"guarda fotos. No teste, o mAP@50 foi de {num(pd_map50)} nas classes do PlantDoc, e o sistema sinalizou "
             f"{pct(p['doente_sinalizada']['valor'])} das folhas doentes. O resultado é compatível com o uso como triagem: "
-            "chamar atenção para a folha certa e incentivar a busca de orientação, nunca substituir o diagnóstico.", BODY),
+            "chamar atenção para a folha certa e incentivar a busca de orientação, nunca substituir o diagnóstico. "
+            "A orquídea mostrou que o mesmo processo, de anotar fotos próprias e treinar de novo, leva uma planta nova "
+            "ao produto.", BODY),
         Paragraph(
             "A principal lição foi a qualidade dos dados. Duplicatas e vazamento entre treino e teste teriam inflado as "
             "métricas sem que percebêssemos. Medir a decisão final por foto e o comportamento fora do cenário ideal "
             "mostrou limites que o mAP sozinho esconde.", BODY),
         Paragraph(
             "Próximos passos: coletar e anotar fotos de lavouras brasileiras com produtores e técnicos parceiros; incluir "
-            "pragas com um dataset próprio; adicionar imagens sem folhas conhecidas ao treino, para reduzir respostas "
-            "indevidas; e executar o modelo no próprio celular, para funcionar sem internet.", BODY),
+            "pragas com um dataset próprio; ampliar as fotos da orquídea, com outras plantas, luzes e fundos; e executar "
+            "o modelo no próprio celular, para funcionar sem internet.", BODY),
 
         Paragraph("Referências", H1),
         Paragraph("SINGH, D. et al. PlantDoc: A Dataset for Visual Plant Disease Detection. CoDS-COMAD 2020. "

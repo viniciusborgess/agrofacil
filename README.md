@@ -7,7 +7,7 @@ O sistema detecta em tempo real folhas sadias e doentes pela câmera do celular 
 - **MVP no ar:** <https://ca-agrofacil-prod.whitewave-37b28008.brazilsouth.azurecontainerapps.io>
 - **Relatório de Computer Vision:** [`docs/relatorio_computer_vision.pdf`](docs/relatorio_computer_vision.pdf)
 - **Relatório de DevOps (Deploy Blindado):** [`docs/devops/relatorio_devops.pdf`](docs/devops/relatorio_devops.pdf)
-- **Vídeo de demonstração:** (link do YouTube)
+- **Vídeo de demonstração:** https://youtu.be/v1xdfRvzbeo
 
 ## Integrantes
 

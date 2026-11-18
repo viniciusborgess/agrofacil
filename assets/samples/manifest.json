@@ -2,6 +2,17 @@
   "live": [
     {
       "arquivo": "live_1.jpg",
+      "origem": "0000_d00039d3",
+      "rotulo_real": [
+        "grape leaf"
+      ],
+      "status": "folha_saudavel",
+      "predito": [
+        "grape leaf"
+      ]
+    },
+    {
+      "arquivo": "live_2.jpg",
       "origem": "Soybean_20edamame_20leaf1_a7293a40",
       "rotulo_real": [
         "Soyabean leaf"
@@ -14,31 +25,7 @@
       ]
     },
     {
-      "arquivo": "live_2.jpg",
-      "origem": "730-grape-leaf-2560x1600-nature-wallpaper_1b45f367",
-      "rotulo_real": [
-        "grape leaf"
-      ],
-      "status": "folha_saudavel",
-      "predito": [
-        "grape leaf"
-      ]
-    },
-    {
       "arquivo": "live_3.jpg",
-      "origem": "late_blight_tomato_leaf_spore1x1200_f07ae859",
-      "rotulo_real": [
-        "Tomato leaf late blight"
-      ],
-      "status": "possivel_doenca",
-      "predito": [
-        "Tomato leaf late blight",
-        "Tomato leaf late blight",
-        "Tomato leaf late blight"
-      ]
-    },
-    {
-      "arquivo": "live_4.jpg",
       "origem": "powdery-mildew-on-pumpkin-leaves-close-up-2_03d6784e",
       "rotulo_real": [
         "Squash Powdery mildew leaf"
@@ -49,42 +36,51 @@
       ]
     },
     {
-      "arquivo": "live_5.jpg",
-      "origem": "160314_web_29e1b4f8",
+      "arquivo": "live_4.jpg",
+      "origem": "2256-body-1501555581-1_158a0bcb",
       "rotulo_real": [
-        "Corn leaf blight"
+        "Corn rust leaf"
       ],
       "status": "possivel_doenca",
       "predito": [
-        "Corn leaf blight"
+        "Corn rust leaf"
+      ]
+    },
+    {
+      "arquivo": "live_5.jpg",
+      "origem": "main-qimg-d9c2a93f60568485c989670d9bbf703b_d9c2a93f",
+      "rotulo_real": [
+        "Tomato leaf"
+      ],
+      "status": "folha_saudavel",
+      "predito": [
+        "Tomato leaf",
+        "Tomato leaf",
+        "Tomato leaf"
       ]
     }
   ],
   "uploads": {
     "doenca": {
       "arquivo": "upload_doenca.jpg",
-      "origem": "late_blight_tomato_leaf_spore1x1200_f07ae859",
+      "origem": "powdery-mildew-on-pumpkin-leaves-close-up-2_03d6784e",
       "rotulo_real": [
-        "Tomato leaf late blight"
+        "Squash Powdery mildew leaf"
       ],
       "status": "possivel_doenca",
       "predito": [
-        "Tomato leaf late blight",
-        "Tomato leaf late blight",
-        "Tomato leaf late blight"
+        "Squash Powdery mildew leaf"
       ]
     },
     "saudavel": {
       "arquivo": "upload_saudavel.jpg",
-      "origem": "Soybean_20edamame_20leaf1_a7293a40",
+      "origem": "0000_d00039d3",
       "rotulo_real": [
-        "Soyabean leaf"
+        "grape leaf"
       ],
       "status": "folha_saudavel",
       "predito": [
-        "Soyabean leaf",
-        "Soyabean leaf",
-        "Soyabean leaf"
+        "grape leaf"
       ]
     },
     "erro": {
@@ -102,8 +98,8 @@
     "foto_ruim": {
       "arquivo": "upload_foto_ruim.jpg",
       "status": "inconclusivo",
-      "blur": 8,
-      "luz": 0.65
+      "blur": 10,
+      "luz": 0.6
     },
     "sem_planta": {
       "arquivo": "upload_sem_planta.jpg",
